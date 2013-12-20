@@ -48,8 +48,11 @@ define(function (require, exports) {
 
   exports.textbox = (function () {
     var textbox = ui.style(function (e) {
-      e.set("top", "-1px")
+      //e.set("top", "-1px")
       e.set("box-shadow", "0px 0px 3px " + ui.hsl(0, 0, 0, 0.5))
+      
+      e.set(["margin-top", "margin-bottom"], "2px")
+      e.set(["margin-left", "margin-right"], "3px")
 
       e.set("border-width", "1px")
       e.set("border-radius", "3px")
@@ -61,61 +64,57 @@ define(function (require, exports) {
     })
 
     return function (e, oOpt, info) {
-      return ui.box(function (e) {
-        e.styles(ui.horiz) // TODO should this be horiz ?
+      return ui.textbox(function (e) {
+        e.styles(textbox)
 
-        ui.textbox(function (e) {
-          e.styles(textbox)
-
-          if (info.width != null) {
-            e.style(function (e) {
-              e.set("width", info.width)
-            })
-          }
-
-          var def = info.default
-
-          if (def != null) {
-            if (info.get == null) {
-              e.title("Default: " + def)
-            } else {
-              e.title("Default: " + info.get(def))
-            }
-          }
-          
-          // TODO check that def is a number ?
-          if (info.type === "number" && def == null) {
-            throw new Error("must provide default when type is \"number\"")
-          }
-
-          e.bind([oOpt], function (x) {
-            e.styleWhen(changes.item, def != null && x !== def)
+        if (info.width != null) {
+          e.style(function (e) {
+            e.set("width", info.width)
           })
-          
-          function setValue(x) {
-            if (info.get != null) {
-              x = info.get(x)
-            }
-            e.value.set(x)
+        }
+
+        var def = info.default
+
+        if (def != null) {
+          if (info.get == null) {
+            e.title("Default: " + def)
+          } else {
+            e.title("Default: " + info.get(def))
           }
+        }
+        
+        // TODO check that def is a number ?
+        if (info.type === "number" && def == null) {
+          throw new Error("must provide default when type is \"number\"")
+        }
 
-          e.bind([oOpt], function (x) {
-            setValue(x)
-          })
+        e.bind([oOpt], function (x) {
+          e.styleWhen(changes.item, def != null && x !== def)
+        })
+        
+        function setValue(x) {
+          if (info.get != null) {
+            x = info.get(x)
+          }
+          e.value.set(x)
+        }
 
-          // TODO should also save on blur
-          e.event([e.changed], function (x) {
-            if (info.set != null) {
-              x = info.set(x)
-            }
-            // TODO don't rely on the global isNaN
-            if (info.type === "number" && (typeof x !== "number" || isNaN(x))) {
-              x = def
-            }
-            oOpt.set(x)
-            setValue(x)
-          })
-        }).move(e)
+        e.bind([oOpt], function (x) {
+          setValue(x)
+        })
+
+        // TODO should also save on blur
+        e.event([e.changed], function (x) {
+          if (info.set != null) {
+            x = info.set(x)
+          }
+          // TODO don't rely on the global isNaN
+          if (info.type === "number" && (typeof x !== "number" || isNaN(x))) {
+            x = def
+          }
+          oOpt.set(x)
+          setValue(x)
+        })
       }).move(e)
     }
   })()
@@ -123,6 +122,7 @@ define(function (require, exports) {
   exports.checkbox = (function () {
     var wrapper = ui.style(function (e) {
       e.set("display", "inline-block")
+      e.set(["margin-top", "margin-bottom"], "1px")
     })
 
     var label = ui.style(function (e) {
@@ -131,6 +131,7 @@ define(function (require, exports) {
       e.set("border-radius", "5px")
     })
 
+    // TODO code duplication with radio
     var checkbox = ui.style(function (e) {
       e.set("margin-right", "3px")
     })
@@ -142,7 +143,7 @@ define(function (require, exports) {
         ui.label(function (e) {
           var def = info.default
 
-          e.styles(ui.horiz, label)
+          e.styles(label)
 
           if (def != null) {
             e.title("Default: " + def)
@@ -262,7 +263,7 @@ define(function (require, exports) {
       e.set("height", "20px")
       e.set("box-shadow", "0px 0px 5px lightgray")
       e.set("padding-left", "1px")
-      e.set("margin-top", "-2px")
+      //e.set("margin-top", "-2px")
       //e.set("top", "-2px")
       e.set("border-width", "1px")
       e.set("border-radius", "3px")
@@ -349,8 +350,9 @@ define(function (require, exports) {
   exports.radio = (function () {
     var radioId = 0
 
+    // TODO code duplication with checkbox
     var radio = ui.style(function (e) {
-      e.set("margin-right", "2px")
+      e.set("margin-right", "3px")
     })
 
     var shrink = ui.style(function (e) {
@@ -379,8 +381,6 @@ define(function (require, exports) {
           }
 
           ui.label(function (e) {
-            e.styles(ui.horiz)
-
             ui.radio(function (e) {
               e.styles(radio)
               e.name(sRadioId)
@@ -509,12 +509,20 @@ define(function (require, exports) {
       e.set("background-image", ui.gradient("to bottom", ["0%",   "transparent"],
                                                          ["100%", "rgba(0, 0, 0, 0.1)"]))
     })
+    
+    var table = ui.style(function (e) {
+      e.set("white-space", "pre-wrap")
+      e.set(["margin-left", "margin-right"], "auto")
+    })
 
     return function (f) {
       return ui.normalize(function (e) {
         e.styles(body)
         e.stopDragging()
-        f(e)
+        ui.table(function (e) {
+          e.styles(table)
+          f(e)
+        }).move(e)
       })
     }
   })()
